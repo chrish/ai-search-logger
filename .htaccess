@@ -1,0 +1,70 @@
+# .htaccess for AI Search Logger
+# Additional configuration and URL rewriting
+
+# Enable rewrite engine
+RewriteEngine On
+
+# Security: Prevent access to sensitive files
+<Files "config.php">
+    Require all denied
+</Files>
+
+<Files "*.log">
+    Require all denied
+</Files>
+
+<FilesMatch "\.(env|ini|conf)$">
+    Require all denied
+</FilesMatch>
+
+# Log search queries from GET requests too (for direct URL access)
+RewriteCond %{QUERY_STRING} ^q=(.+)$ [NC]
+RewriteRule ^.*$ - [E=SEARCH_QUERY:%1,L]
+
+# Custom error pages
+ErrorDocument 404 /404.php
+ErrorDocument 500 /500.php
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff" 
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always unset X-Powered-By
+</IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml text/javascript application/javascript application/json
+</IfModule>
+
+# Cache control
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+</IfModule>
+
+# Prevent access to git files
+<FilesMatch "^\.git">
+    Require all denied
+</FilesMatch>
+
+# PHP settings (if not set in virtual host)
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 2M
+    php_value post_max_size 8M
+    php_value max_execution_time 30
+    php_value display_errors off
+    php_value log_errors on
+</IfModule>
+
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 2M
+    php_value post_max_size 8M
+    php_value max_execution_time 30
+    php_value display_errors off
+    php_value log_errors on
+</IfModule>
